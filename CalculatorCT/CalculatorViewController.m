@@ -39,7 +39,9 @@
         
     } else {
             self.display.text=digit;
-            self.userIsInTheMiddleOfEnteringANumber= YES;        
+        if (![self.display.text isEqualToString:@"0"]) { 
+            self.userIsInTheMiddleOfEnteringANumber= YES;
+        }    
     }
 }
 //----------------------------------------------------------------------------
@@ -65,8 +67,8 @@
 //  ----------------------task "Display stack" ----------------------------------
     NSString *stringToAdd=@"";
     stringToAdd = [stringToAdd stringByAppendingString:operation]; 
-    stringToAdd = [stringToAdd stringByAppendingString:@" "];  
-    stringToAdd = [stringToAdd stringByAppendingString:self.display.text];       
+//    stringToAdd = [stringToAdd stringByAppendingString:@" "];  
+//    stringToAdd = [stringToAdd stringByAppendingString:self.display.text];       
 
     [self appendStringToHistroyDisplay:stringToAdd :YES];
 //--------------------------------------------------------------------------------
@@ -89,16 +91,17 @@
     self.display.text = @"0";
     self.displayStack.text = @"";
     [self.brain ClearStack];
+    self.userIsInTheMiddleOfEnteringANumber = NO;
+    self.userAlreadyEnteredADecimalPoint = NO;
 }
-- (IBAction)plusMinusPresswd {
-    
+- (IBAction)plusMinusPressed:(id)sender {
     // -------- change sign on display-----------------
     self.display.text = [NSString stringWithFormat:@"%g", 
-                     -[self.display.text doubleValue]];
+                         -[self.display.text doubleValue]];
     
     //--------------- if user not entering a number, send to stack
     if (!self.userIsInTheMiddleOfEnteringANumber) {
-        [self enterPressed];
+        [self operationPressed:sender];
     }
 
 }

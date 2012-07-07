@@ -68,8 +68,10 @@
     
     } else if ([@"π" isEqualToString:operation]) {
         result=M_PI;         
+     
+    } else if ([operation isEqualToString:@"+/-"]) {
+        result = [self popOperand] * -1;
     }
-    
     if (isnan(result)) {
         result = 0;
     }
