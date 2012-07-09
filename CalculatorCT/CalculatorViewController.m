@@ -18,7 +18,7 @@
 @property (nonatomic,strong)  NSDictionary *testVariablesValue;
 
 - (NSString *)variablesDescription;
-- (double)calculateProgram;
+- (id)calculateProgram;
 @end
 
 @implementation CalculatorViewController
@@ -53,10 +53,10 @@
 - (IBAction)enterPressed 
 {
     [self.brain pushOperand:[self.display.text doubleValue]];    
-//    self.userIsInTheMiddleOfEnteringANumber=NO;
+    self.userIsInTheMiddleOfEnteringANumber=NO;
     self.userAlreadyEnteredADecimalPoint=NO; 
-//    self.inputDisplay.text = [self.brain description];
-    [self synchronizeView];      
+    self.inputDisplay.text = [self.brain description];
+//    [self synchronizeView];      
      
 }
 - (IBAction)operationPressed:(UIButton *)sender {
@@ -64,15 +64,19 @@
         [self enterPressed];
     }
     NSString *operation=sender.currentTitle;
-    double result=[self.brain performOperation:operation];
-   self.display.text=[NSString stringWithFormat:@"%g",result];     
-   self.inputDisplay.text = [self.brain description];
+    id result=[self.brain performOperation:operation];
+    if ([result isKindOfClass:[NSString class]]) self.display.text = result;
+    else self.display.text = [NSString stringWithFormat:@"%g", [result doubleValue]];
+    self.inputDisplay.text = [self.brain description];
  //   [self synchronizeView];      
 
 }
 - (IBAction)variablePressed:(UIButton *)sender {
 	[self.brain pushVariable:sender.currentTitle];
-    [self synchronizeView];      
+    self.userIsInTheMiddleOfEnteringANumber=NO;
+    self.userAlreadyEnteredADecimalPoint=NO; 
+    self.inputDisplay.text = [self.brain description];
+//    [self synchronizeView];      
 }
 
 - (IBAction)decimalPointPressed {
@@ -113,7 +117,7 @@
     if ([testNumber isEqualToString:@"1"]) {
         self.testVariablesValue = [NSDictionary dictionaryWithObjectsAndKeys:@"1", @"x", @"3", @"a", @"4", @"b", nil];
     } else if ([testNumber isEqualToString:@"2"]) {
-        self.testVariablesValue = [NSDictionary dictionaryWithObjectsAndKeys:@"0", @"x", @"7.26", @"a", @"-1", @"b", nil];
+        self.testVariablesValue = [NSDictionary dictionaryWithObjectsAndKeys:@"-4", @"x", @"3", @"a", @"3", @"b", nil];
     } else if ([testNumber isEqualToString:@"3"]) {
         self.testVariablesValue = nil;
     }
@@ -154,7 +158,7 @@
     return descriptionOfVariablesUsed;
 }
 
-- (double)calculateProgram {
+- (id)calculateProgram {
     if (!self.testVariablesValue) {
         return [[self.brain class] runProgram:self.brain.program];
     } else {
@@ -164,8 +168,10 @@
 }
 
 -(void)synchronizeView {   
- 
-    self.display.text = [NSString stringWithFormat:@"%g", [self calculateProgram]];
+    id result =[self calculateProgram]; 
+    if ([result isKindOfClass:[NSString class]]) self.display.text = result;
+    else self.display.text = [NSString stringWithFormat:@"%g", [result doubleValue]];
+
     // Now the inputDisplay from the latest description of program 
     self.inputDisplay.text = [CalculatorBrain descriptionOfProgram:self.brain.program];
     self.variablesDisplay.text = [self variablesDescription];

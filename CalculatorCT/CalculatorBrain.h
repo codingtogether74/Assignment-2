@@ -12,7 +12,7 @@
 
 - (void)pushOperand:(double)operand;
 - (void)pushVariable:(NSString *) variable;
-- (double)performOperation:(NSString *)operation;
+- (id)performOperation:(NSString *)operation;
 - (NSString *)description;
 - (void)ClearStack;
 - (void)removeLastItem;
@@ -20,8 +20,8 @@
 @property (nonatomic, readonly) id program;
 
 + (NSString *)descriptionOfProgram:(id)program;
-+ (double)runProgram:(id)program;
-+ (double) runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues;
++ (id)runProgram:(id)program;
++ (id) runProgram:(id)program usingVariableValues:(NSDictionary *)variableValues;
 + (NSSet *)variablesUsedInProgram:(id)program;
 + (BOOL)isOperation:(NSString *)operation;
 + (BOOL)isABinaryOperation:(NSString *)operation;
