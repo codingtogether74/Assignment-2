@@ -12,7 +12,6 @@
 
 - (void)pushOperand:(double)operand;
 - (void)pushVariable:(NSString *) variable;
-- (void)pushOperation:(NSString *) operation ; // DEBUG ONLY
 - (double)performOperation:(NSString *)operation;
 - (NSString *)description;
 - (void)ClearStack;

@@ -109,11 +109,6 @@ static NSString *previousOperator;
 	[self.programStack addObject:variable];	
 }
 
-// -----------ONLY DEBUG--------------------------
-- (void)pushOperation:(NSString *) operation {
-    [self.programStack addObject:operation];  
-}
-//-------------------------------------------------
 - (double)performOperation:(NSString *)operation
 {
     [self.programStack addObject:operation];
