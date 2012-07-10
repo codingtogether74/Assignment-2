@@ -38,11 +38,11 @@ static NSString *previousOperator;
     id topOfStack = [stack lastObject];
     if (topOfStack) [stack removeLastObject];
     
-    if ([topOfStack isKindOfClass:[NSNumber class]]) 
+    if ([topOfStack isKindOfClass:[NSNumber class]])  //--------Number-------
     {
         description = [topOfStack stringValue];
     } 
-    else if ([topOfStack isKindOfClass:[NSString class]]) 
+    else if ([topOfStack isKindOfClass:[NSString class]]) //--------Operation or variable ------
     {
         NSString *operation = topOfStack;
         if ([self isAUnaryOperation:operation]) {
@@ -60,19 +60,11 @@ static NSString *previousOperator;
             previousOperator = operation;
             NSString *secondOperand = [self descriptionOfTopOfStack:stack];
             NSString *firstOperand = [self descriptionOfTopOfStack:stack];
-            
-            
-            BOOL emptyStack = NO;
-            if ([stack lastObject]) {
-                emptyStack = YES;
-            } 
-            
             description = [NSString stringWithFormat:format, firstOperand, operation, secondOperand];
             
             previousOperator = operation; // to be used in the next iteration
         } else {
-            // Is a variable
-            description = [NSString stringWithFormat:@"%@", topOfStack];
+            description = [NSString stringWithFormat:@"%@", topOfStack]; //---Variable---
         }
         
     }
@@ -113,6 +105,10 @@ static NSString *previousOperator;
 {
     [self.programStack addObject:operation];
     return [[self class] runProgram:self.program];
+}
+- (void)pushOperation:(NSString *)operation
+{
+    [self.programStack addObject:operation];
 }
 
 

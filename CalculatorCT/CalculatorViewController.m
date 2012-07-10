@@ -8,7 +8,7 @@
 
 #import "CalculatorViewController.h"
 #import "CalculatorBrain.h"
-#define MAX_COUNT (30)
+#define MAX_INPUT_DISPLAY_LENGTH (30)
 
 @interface CalculatorViewController ()
 
@@ -19,6 +19,7 @@
 
 - (NSString *)variablesDescription;
 - (id)calculateProgram;
+- (void) updateInputDisplay: (NSString *)displayString;
 @end
 
 @implementation CalculatorViewController
@@ -40,46 +41,51 @@
     
     NSString *digit = [sender currentTitle];
     if (self.userIsInTheMiddleOfEnteringANumber){
+        if ([digit isEqualToString:@"0"] && [self.display.text isEqualToString:@"0"]) return; //ignore leading zeros
         self.display.text = [self.display.text stringByAppendingString:digit];
         
     } else {
             self.display.text=digit;
-        if (![self.display.text isEqualToString:@"0"]) { 
             self.userIsInTheMiddleOfEnteringANumber= YES;
-        }    
     }
 }
 //----------------------------------------------------------------------------
 - (IBAction)enterPressed 
 {
     [self.brain pushOperand:[self.display.text doubleValue]];    
+    [self updateInputDisplay: [self.brain description]];
+    self.variablesDisplay.text = [self variablesDescription];
     self.userIsInTheMiddleOfEnteringANumber=NO;
     self.userAlreadyEnteredADecimalPoint=NO; 
-    self.inputDisplay.text = [self.brain description];
-//    [self synchronizeView];      
-     
+    
 }
 - (IBAction)operationPressed:(UIButton *)sender {
-    if (self.userIsInTheMiddleOfEnteringANumber) {
-        [self enterPressed];
-    }
+    
     NSString *operation=sender.currentTitle;
-    id result=[self.brain performOperation:operation];
-    if ([result isKindOfClass:[NSString class]]) self.display.text = result;
-    else self.display.text = [NSString stringWithFormat:@"%g", [result doubleValue]];
-    self.inputDisplay.text = [self.brain description];
- //   [self synchronizeView];      
-
+    if (self.userIsInTheMiddleOfEnteringANumber) [self enterPressed];
+    [self.brain pushOperation:operation];
+    [self synchronizeView];      
+/*    id result=[self.brain performOperation:operation];
+    if ([result isKindOfClass:[NSString class]]) 
+        self.display.text = result;
+    else 
+        self.display.text = [NSString stringWithFormat:@"%g", [result doubleValue]];
+    [self updateInputDisplay: [self.brain description]];
+    self.variablesDisplay.text = [self variablesDescription];
+*/
 }
 - (IBAction)variablePressed:(UIButton *)sender {
+    if (self.userIsInTheMiddleOfEnteringANumber) [self enterPressed];
 	[self.brain pushVariable:sender.currentTitle];
+    self.display.text = sender.currentTitle;
+    [self updateInputDisplay: [self.brain description]];
+    self.variablesDisplay.text = [self variablesDescription];
     self.userIsInTheMiddleOfEnteringANumber=NO;
     self.userAlreadyEnteredADecimalPoint=NO; 
-    self.inputDisplay.text = [self.brain description];
-//    [self synchronizeView];      
 }
 
 - (IBAction)decimalPointPressed {
+
     if (!self.userAlreadyEnteredADecimalPoint) {
         if (self.userIsInTheMiddleOfEnteringANumber) {
             self.display.text = [self.display.text stringByAppendingString:@"."];
@@ -94,24 +100,27 @@
 }
 
 - (IBAction)CleanAll {
+
     self.display.text = @"0";
     self.inputDisplay.text = @"";
     [self.brain ClearStack];
+    self.testVariablesValue = nil;
+    self.variablesDisplay.text = [self variablesDescription];
     self.userIsInTheMiddleOfEnteringANumber = NO;
     self.userAlreadyEnteredADecimalPoint = NO;
 }
 
 - (IBAction)undoPress:(id)sender {
+
     if (self.userIsInTheMiddleOfEnteringANumber) {
         [self delDigit];
     } else {
         [self.brain removeLastItem];
-//        self.display.text = [NSString stringWithFormat:@"%g", [self calculateProgram]];
-//        self.inputDisplay.text = [self.brain description];
         [self synchronizeView];      
     }
 }
 - (IBAction)setTestVariables:(UIButton *)sender {
+
     NSString * testNumber;
     testNumber=[sender.currentTitle substringWithRange:NSMakeRange(5, 1)];
     if ([testNumber isEqualToString:@"1"]) {
@@ -127,6 +136,7 @@
 
 
 - (IBAction)delDigit {
+
     //----------------------------- It is working only in entering a number-------
     if (self.userIsInTheMiddleOfEnteringANumber) {
         if ([self.display.text length]>0) {
@@ -140,6 +150,7 @@
             if ([self.display.text length]==0) {
                 self.display.text = @"0";
                 self.userAlreadyEnteredADecimalPoint = NO;
+                self.userIsInTheMiddleOfEnteringANumber=NO;
             }
    
         }
@@ -147,18 +158,22 @@
 }
 
 - (NSString *)variablesDescription {
-    // for tests
+
     NSString *descriptionOfVariablesUsed = @"";
+    
     NSSet *variablesBeingUsed = [[self.brain class] variablesUsedInProgram:self.brain.program];
+    
     for (NSString *variable in variablesBeingUsed) {
         if ([self.testVariablesValue objectForKey:variable]) {
             descriptionOfVariablesUsed = [descriptionOfVariablesUsed stringByAppendingString:[NSString stringWithFormat:@"%@= %@  ", variable, [self.testVariablesValue objectForKey:variable]]];
-        }
+        } else 
+            descriptionOfVariablesUsed = [descriptionOfVariablesUsed stringByAppendingString:[NSString stringWithFormat:@"%@= 0  ", variable]];
     }
     return descriptionOfVariablesUsed;
 }
 
 - (id)calculateProgram {
+    
     if (!self.testVariablesValue) {
         return [[self.brain class] runProgram:self.brain.program];
     } else {
@@ -168,15 +183,28 @@
 }
 
 -(void)synchronizeView {   
-    id result =[self calculateProgram]; 
-    if ([result isKindOfClass:[NSString class]]) self.display.text = result;
-    else self.display.text = [NSString stringWithFormat:@"%g", [result doubleValue]];
 
-    // Now the inputDisplay from the latest description of program 
-    self.inputDisplay.text = [CalculatorBrain descriptionOfProgram:self.brain.program];
+    id result =[self calculateProgram]; 
+    if ([result isKindOfClass:[NSString class]])
+        self.display.text = result;
+    else 
+        self.display.text = [NSString stringWithFormat:@"%g", [result doubleValue]];
+
+    [self updateInputDisplay: [self.brain description]];
     self.variablesDisplay.text = [self variablesDescription];
-    // And the user isn't in the middle of entering a number
     self.userIsInTheMiddleOfEnteringANumber = NO;
+    self.userAlreadyEnteredADecimalPoint = NO;
+}
+
+- (void) updateInputDisplay: (NSString *)displayString {
+
+    NSString *userDisplayText = displayString;
+    NSUInteger userActionDisplayLength = [userDisplayText length];
+    
+    if (userActionDisplayLength >= MAX_INPUT_DISPLAY_LENGTH){
+        userDisplayText = [userDisplayText substringWithRange:NSMakeRange(userActionDisplayLength - MAX_INPUT_DISPLAY_LENGTH, MAX_INPUT_DISPLAY_LENGTH)];
+    }
+    self.inputDisplay.text = userDisplayText;
 }
 - (void)viewDidUnload {
     [self setInputDisplay:nil];
