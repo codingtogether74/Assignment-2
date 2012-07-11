@@ -16,8 +16,6 @@
 
 @synthesize programStack =_programStack ;
 
-static NSString *previousOperator;
-
 - (NSMutableArray *)programStack
 {
     if(!_programStack) {
@@ -31,7 +29,7 @@ static NSString *previousOperator;
     return [self.programStack copy];
 }
 
-+ (NSString *)descriptionOfTopOfStack:(NSMutableArray *)stack
++ (NSString *)descriptionOfTopOfStack:(NSMutableArray *)stack withPreviousOperator: (NSString *) previousOperator
 {
     NSString *description = @"";
     int currentOperationPriority;
@@ -48,7 +46,7 @@ static NSString *previousOperator;
     {
         NSString *operation = topOfStack;
         if ([self isAUnaryOperation:operation]) {
-            description = [NSString stringWithFormat:@"%@(%@)", operation, [self descriptionOfTopOfStack:stack]];
+            description = [NSString stringWithFormat:@"%@(%@)", operation, [self descriptionOfTopOfStack:stack withPreviousOperator:topOfStack]];
             
         } else if ([self isABinaryOperation:operation]) {
             
@@ -57,7 +55,6 @@ static NSString *previousOperator;
             currentOperationPriority = [self operationPriority:topOfStack];
             previousOperationPriority = [self operationPriority:previousOperator];
             
-//            if ([self isAdditionOrSubtraction:operation] && [self isMultiplicationOrDivision:previousOperator])  {
             if (currentOperationPriority < previousOperationPriority || 
                 (currentOperationPriority == previousOperationPriority && [self operationIsNotCommutative:previousOperator])){                                    
                 
@@ -65,12 +62,10 @@ static NSString *previousOperator;
             } else {
                 format = @"%@ %@ %@";
             }
-            previousOperator = operation;
-            NSString *secondOperand = [self descriptionOfTopOfStack:stack];
-            NSString *firstOperand = [self descriptionOfTopOfStack:stack];
+            NSString *secondOperand = [self descriptionOfTopOfStack:stack withPreviousOperator:topOfStack];
+            NSString *firstOperand = [self descriptionOfTopOfStack:stack withPreviousOperator:topOfStack];
             description = [NSString stringWithFormat:format, firstOperand, operation, secondOperand];
             
-            previousOperator = operation; // to be used in the next iteration
         } else {
             description = [NSString stringWithFormat:@"%@", topOfStack]; //---Variable---
         }
@@ -87,10 +82,9 @@ static NSString *previousOperator;
         stack = [program mutableCopy];
     }
     
-    NSString *description = [self descriptionOfTopOfStack:stack];
+    NSString *description = [self descriptionOfTopOfStack:stack withPreviousOperator:@"Null"];
     while ([stack count]) {
-        previousOperator = @"";
-        description = [NSString stringWithFormat:@"%@, %@", [self descriptionOfTopOfStack:stack], description];
+        description = [NSString stringWithFormat:@"%@, %@", [self descriptionOfTopOfStack:stack withPreviousOperator:@"Null"], description];
     }
     return description;
 }
