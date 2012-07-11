@@ -34,6 +34,8 @@ static NSString *previousOperator;
 + (NSString *)descriptionOfTopOfStack:(NSMutableArray *)stack
 {
     NSString *description = @"";
+    int currentOperationPriority;
+    int  previousOperationPriority;
     
     id topOfStack = [stack lastObject];
     if (topOfStack) [stack removeLastObject];
@@ -51,7 +53,13 @@ static NSString *previousOperator;
         } else if ([self isABinaryOperation:operation]) {
             
             NSString *format = @"";             
-            if ([self isAdditionOrSubtraction:operation] && [self isMultiplicationOrDivision:previousOperator])  {
+
+            currentOperationPriority = [self operationPriority:topOfStack];
+            previousOperationPriority = [self operationPriority:previousOperator];
+            
+//            if ([self isAdditionOrSubtraction:operation] && [self isMultiplicationOrDivision:previousOperator])  {
+            if (currentOperationPriority < previousOperationPriority || 
+                (currentOperationPriority == previousOperationPriority && [self operationIsNotCommutative:previousOperator])){                                    
                 
                 format = @"(%@ %@ %@)";
             } else {
@@ -253,24 +261,29 @@ static NSString *previousOperator;
     }
 }
 
-+ (BOOL)isMultiplicationOrDivision:(NSString *)operation {
-    NSSet *operations = [NSSet setWithObjects:@"*", @"/", nil];
-    if ([operations containsObject:operation]) {
-        return YES;
-    } else {
-        return NO;
+
+// This function returns priority values based on conventional arithmetic order of operations
++(int) operationPriority: (NSString *)operation
+{
+    if ([operation isEqualToString:@"/"] || [operation isEqualToString:@"*"]){
+        return 2;
     }
+    if ([operation isEqualToString:@"-"] || [operation isEqualToString:@"+"]){
+        return 1;
+    }
+    return 0;
 }
 
-+ (BOOL)isAdditionOrSubtraction:(NSString *)operation {
-    NSSet *operations = [NSSet setWithObjects:@"+", @"-", nil];
-    if ([operations containsObject:operation]) {
++(BOOL) operationIsNotCommutative: (NSString *) operation
+{
+    if ([operation isEqualToString:@"/"]){
         return YES;
-    } else {
-        return NO;
     }
+    if ([operation isEqualToString:@"-"]){
+        return YES;
+    }
+    return NO;
 }
-
 + (NSSet *)variablesUsedInProgram:(id)program 
 {
     NSMutableSet *variables = [NSMutableSet set];

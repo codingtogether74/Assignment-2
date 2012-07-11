@@ -27,7 +27,6 @@
 + (BOOL)isOperation:(NSString *)operation;
 + (BOOL)isABinaryOperation:(NSString *)operation;
 + (BOOL)isAUnaryOperation:(NSString *)operation;
-+ (BOOL)isMultiplicationOrDivision:(NSString *)operation;
-+ (BOOL)isAdditionOrSubtraction:(NSString *)operation;
-
++(int) operationPriority: (NSString *)operation;
++(BOOL) operationIsNotCommutative: (NSString *) operation;
 @end

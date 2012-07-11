@@ -40,8 +40,8 @@
 - (IBAction)digitPress:(UIButton *)sender {
     
     NSString *digit = [sender currentTitle];
+    if ([digit isEqualToString:@"0"] && [self.display.text isEqualToString:@"0"])return;//ignore leading zeros
     if (self.userIsInTheMiddleOfEnteringANumber){
-        if ([digit isEqualToString:@"0"] && [self.display.text isEqualToString:@"0"]) return; //ignore leading zeros
         self.display.text = [self.display.text stringByAppendingString:digit];
         
     } else {
@@ -75,6 +75,7 @@
 */
 }
 - (IBAction)variablePressed:(UIButton *)sender {
+
     if (self.userIsInTheMiddleOfEnteringANumber) [self enterPressed];
 	[self.brain pushVariable:sender.currentTitle];
     self.display.text = sender.currentTitle;
@@ -120,7 +121,8 @@
     }
 }
 - (IBAction)setTestVariables:(UIButton *)sender {
-
+ 
+    if (self.userIsInTheMiddleOfEnteringANumber) [self enterPressed];
     NSString * testNumber;
     testNumber=[sender.currentTitle substringWithRange:NSMakeRange(5, 1)];
     if ([testNumber isEqualToString:@"1"]) {
