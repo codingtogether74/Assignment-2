@@ -43,7 +43,12 @@
     if ([digit isEqualToString:@"0"] && [self.display.text isEqualToString:@"0"])return;//ignore leading zeros
     if (self.userIsInTheMiddleOfEnteringANumber){
         self.display.text = [self.display.text stringByAppendingString:digit];
-        
+//--------remove leading zeroes ----------------
+        self.display.text=self.display.text;
+        if ([self.display.text hasPrefix:@"0"]) {
+            self.display.text=[self.display.text  substringWithRange:NSMakeRange(1,[self.display.text length]-1)]; 
+        }
+       
     } else {
             self.display.text=digit;
             self.userIsInTheMiddleOfEnteringANumber= YES;
