@@ -45,7 +45,8 @@
         self.display.text = [self.display.text stringByAppendingString:digit];
 //--------remove leading zeroes ----------------
         self.display.text=self.display.text;
-        if ([self.display.text hasPrefix:@"0"]) {
+        if ([self.display.text hasPrefix:@"0"] &&
+            ![[self.display.text substringWithRange:NSMakeRange(1, 1)] isEqualToString:@"." ]) {
             self.display.text=[self.display.text  substringWithRange:NSMakeRange(1,[self.display.text length]-1)]; 
         }
        
